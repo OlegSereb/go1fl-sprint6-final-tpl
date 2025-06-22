@@ -17,7 +17,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	wd, _ := os.Getwd()
 	log.Printf("Текущая директория: %s", wd)
 
-	http.ServeFile(w, r, "../index.html")
+	http.ServeFile(w, r, "index.html")
 }
 
 // UploadHandler принимает файл, конвертирует и сохраняет результат
@@ -72,6 +72,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Возвращаем результат
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fmt.Fprintf(w, "Результат:\n%s\n\nСохранён как: %s", result, filename)
 }

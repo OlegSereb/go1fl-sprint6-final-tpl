@@ -22,8 +22,9 @@ func Convert(input string) (string, error) {
 
 // isMorse проверяет, является ли строка кодом Морзе
 func isMorse(s string) bool {
-	for _, r := range s {
-		if r != '.' && r != '-' && r != ' ' && r != '\n' {
+	s = strings.TrimSpace(s)
+	for _, ch := range s {
+		if ch != '.' && ch != '-' && ch != ' ' && ch != '\n' {
 			return false
 		}
 	}

@@ -9,39 +9,45 @@ import (
 	"time"
 
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/service"
+	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/static"
 )
 
 // RootHandler отправляет HTML-форму
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Обработка запроса к /")
-	wd, _ := os.Getwd()
-	log.Printf("Текущая директория: %s", wd)
 
-	http.ServeFile(w, r, "index.html")
+	fileServer := http.FileServer(http.FS(static.Files))
+	fileServer.ServeHTTP(w, r)
 }
 
 // UploadHandler принимает файл, конвертирует и сохраняет результат
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	// Ограничиваем размер загружаемого файла
+	// Ограничиваем размер загружаемого контента
 	r.ParseMultipartForm(10 << 20) // 10 MB
 
-	// Получаем файл из формы
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		log.Printf("Ошибка при получении файла: %v", err)
-		http.Error(w, "Ошибка при получении файла", http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
+	var content []byte
+	var err error
 
-	log.Printf("Загружен файл: %s", handler.Filename)
+	// Пробуем получить файл
+	file, handler, err := r.FormFile("myFile")
+	if err == nil {
+		defer file.Close()
+		log.Printf("Загружен файл: %s", handler.Filename)
 
-	// Читаем содержимое файла
-	content, err := io.ReadAll(file)
-	if err != nil {
-		log.Printf("Ошибка чтения файла: %v", err)
-		http.Error(w, "Ошибка чтения файла", http.StatusInternalServerError)
-		return
+		content, err = io.ReadAll(file)
+		if err != nil {
+			log.Printf("Ошибка чтения файла: %v", err)
+			http.Error(w, "Ошибка чтения файла", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// Если файла нет, пробуем получить текст из поля "text"
+		text := r.FormValue("text")
+		if text == "" {
+			http.Error(w, "Не передан ни файл, ни текст", http.StatusBadRequest)
+			return
+		}
+		content = []byte(text)
 	}
 
 	// Конвертируем
@@ -52,7 +58,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Генерируем безопасное имя файла
+	// Генерируем имя файла
 	filename := "converted_" + time.Now().UTC().Format("20060102_150405") + ".txt"
 
 	// Создаём и записываем новый файл

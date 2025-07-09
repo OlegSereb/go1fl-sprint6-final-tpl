@@ -83,4 +83,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fmt.Fprintf(w, "Исходный текст: %s\n\nРезультат:\n%s\n\nСохранён как: %s", string(content), result, filename)
+
+	// Пример использования конвертера
+	fmt.Println("Пример из версии с улучшенным кодом!")
 }
